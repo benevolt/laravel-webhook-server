@@ -107,12 +107,12 @@ class CallWebhookJob implements ShouldQueue
             }
 
             $this->dispatchEvent(WebhookCallFailedEvent::class);
-        }
 
-        if ($lastAttempt) {
-            $this->dispatchEvent(FinalWebhookCallFailedEvent::class);
+            if ($lastAttempt) {
+                $this->dispatchEvent(FinalWebhookCallFailedEvent::class);
 
-            $this->delete();
+                $this->fail($exception);
+            }
         }
     }
 
