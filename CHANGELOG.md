@@ -2,11 +2,43 @@
 
 All notable changes to `laravel-webhook-server` will be documented in this file
 
+## 3.2.1 - 2022-07-29
+
+### What's Changed
+
+- Allow sub-classes of `CallWebhookJob` to use a `GuzzleHttp\Client` specific for outgoing webhooks by @bezhermoso in https://github.com/spatie/laravel-webhook-server/pull/125
+
+**Full Changelog**: https://github.com/spatie/laravel-webhook-server/compare/3.2.0...3.2.1
+
+## 3.2.0 - 2022-06-24
+
+### What's Changed
+
+- feat: add dispatchIf, dispatchUnless, dispatchSyncIf and dispatchSync… by @regnerisch in https://github.com/spatie/laravel-webhook-server/pull/124
+
+### New Contributors
+
+- @regnerisch made their first contribution in https://github.com/spatie/laravel-webhook-server/pull/124
+
+**Full Changelog**: https://github.com/spatie/laravel-webhook-server/compare/3.1.2...3.2.0
+
+## 3.1.2 - 2022-01-26
+
+- support Laravel 9
+
+## 3.1.1 - 2021-12-10
+
+## What's Changed
+
+- Include Exception with Laravel queue failures by @awarrenlove in https://github.com/spatie/laravel-webhook-server/pull/114
+
+**Full Changelog**: https://github.com/spatie/laravel-webhook-server/compare/3.1.0...3.1.1
+
 ## 3.0.0 - 2021-09-10
 
 - support using webhook URLs as part of webhook signatures (#98)
 
-The only breaking change in this release is the addidation of `string $webhookUrl` to the `calculateSignature` method of the `Signer` interface. 
+The only breaking change in this release is the addidation of `string $webhookUrl` to the `calculateSignature` method of the `Signer` interface.
 If you have a custom `Signer` in your project, add that `$webhookUrl` to the `calculateSignature` method.
 
 ## 2.1.1 - 2021-08-27

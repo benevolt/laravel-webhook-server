@@ -4,6 +4,7 @@ namespace Spatie\WebhookServer;
 
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
@@ -38,6 +39,8 @@ class CallWebhookJob implements ShouldQueue
 
     public bool $verifySsl;
 
+    public bool $throwExceptionOnFailure;
+
     /** @var string|null */
     public $queue = null;
 
@@ -59,8 +62,7 @@ class CallWebhookJob implements ShouldQueue
 
     public function handle()
     {
-        /** @var \GuzzleHttp\Client $client */
-        $client = app(Client::class);
+        $client = $this->getClient();
 
         $lastAttempt = $this->attempts() >= $this->tries;
 
@@ -107,12 +109,12 @@ class CallWebhookJob implements ShouldQueue
             }
 
             $this->dispatchEvent(WebhookCallFailedEvent::class);
-        }
 
-        if ($lastAttempt) {
-            $this->dispatchEvent(FinalWebhookCallFailedEvent::class);
+            if ($lastAttempt) {
+                $this->dispatchEvent(FinalWebhookCallFailedEvent::class);
 
-            $this->delete();
+                $this->throwExceptionOnFailure ? $this->fail($exception) : $this->delete();
+            }
         }
     }
 
@@ -124,6 +126,11 @@ class CallWebhookJob implements ShouldQueue
     public function getResponse(): ?Response
     {
         return $this->response;
+    }
+
+    protected function getClient(): ClientInterface
+    {
+        return app(Client::class);
     }
 
     private function dispatchEvent(string $eventClass)

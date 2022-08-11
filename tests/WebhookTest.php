@@ -36,6 +36,7 @@ class WebhookTest extends TestCase
             $this->assertEquals($config['backoff_strategy'], $job->backoffStrategyClass);
             $this->assertContains($config['signature_header_name'], array_keys($job->headers));
             $this->assertEquals($config['verify_ssl'], $job->verifySsl);
+            $this->assertEquals($config['throw_exception_on_failure'], $job->throwExceptionOnFailure);
             $this->assertEquals($config['tags'], $job->tags);
 
             return true;
@@ -149,5 +150,45 @@ class WebhookTest extends TestCase
 
         $this->assertIsString($webhookCall->getUuid());
         $this->assertSame('my-unique-identifier', $webhookCall->getUuid());
+    }
+
+    /** @test */
+    public function it_can_dispatch_a_job_that_calls_a_webhook_if_condition_true()
+    {
+        $url = 'https://localhost';
+
+        WebhookCall::create()->url($url)->useSecret('123')->dispatchIf(true);
+
+        Queue::assertPushed(CallWebhookJob::class);
+    }
+
+    /** @test */
+    public function it_can_not_dispatch_a_job_that_calls_a_webhook_if_condition_false()
+    {
+        $url = 'https://localhost';
+
+        WebhookCall::create()->url($url)->useSecret('123')->dispatchIf(false);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /** @test */
+    public function it_can_not_dispatch_a_job_that_calls_a_webhook_unless_condition_true()
+    {
+        $url = 'https://localhost';
+
+        WebhookCall::create()->url($url)->useSecret('123')->dispatchUnless(true);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /** @test */
+    public function it_can_dispatch_a_job_that_calls_a_webhook_unless_condition_false()
+    {
+        $url = 'https://localhost';
+
+        WebhookCall::create()->url($url)->useSecret('123')->dispatchUnless(false);
+
+        Queue::assertPushed(CallWebhookJob::class);
     }
 }

@@ -3,7 +3,9 @@
 namespace Spatie\WebhookServer\Tests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\TransferStats;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\Event;
 use Mockery\MockInterface;
 use Spatie\TestTime\TestTime;
@@ -234,6 +236,22 @@ class CallWebhookJobTest extends TestCase
         Event::assertDispatched(WebhookCallFailedEvent::class, function (WebhookCallFailedEvent $event) {
             $this->assertNotNull($event->errorType);
             $this->assertNotNull($event->errorMessage);
+
+            return true;
+        });
+    }
+
+    /** @test */
+    public function it_s_generate_job_failed_event_if_an_exception_throws_and_throw_exception_on_failure_config_is_set()
+    {
+        $this->testClient->throwConnectionException();
+
+        $this->baseWebhook()->maximumTries(1)->throwExceptionOnFailure()->dispatch();
+
+        $this->artisan('queue:work --once');
+
+        Event::assertDispatched(JobFailed::class, function (JobFailed $event) {
+            $this->assertInstanceOf(ConnectException::class, $event->exception);
 
             return true;
         });

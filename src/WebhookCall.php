@@ -39,7 +39,8 @@ class WebhookCall
             ->signUsing($config['signer'])
             ->withHeaders($config['headers'])
             ->withTags($config['tags'])
-            ->verifySsl($config['verify_ssl']);
+            ->verifySsl($config['verify_ssl'])
+            ->throwExceptionOnFailure($config['throw_exception_on_failure']);
     }
 
     public function __construct()
@@ -167,6 +168,13 @@ class WebhookCall
         return $this;
     }
 
+    public function throwExceptionOnFailure(bool $throwExceptionOnFailure = true): self
+    {
+        $this->callWebhookJob->throwExceptionOnFailure = $throwExceptionOnFailure;
+
+        return $this;
+    }
+
     public function meta(array $meta): self
     {
         $this->callWebhookJob->meta = $meta;
@@ -188,11 +196,37 @@ class WebhookCall
         return dispatch($this->callWebhookJob);
     }
 
+    public function dispatchIf($condition): PendingDispatch|null
+    {
+        if ($condition) {
+            return $this->dispatch();
+        }
+
+        return null;
+    }
+
+    public function dispatchUnless($condition): PendingDispatch|null
+    {
+        return $this->dispatchIf(! $condition);
+    }
+
     public function dispatchSync(): void
     {
         $this->prepareForDispatch();
 
         dispatch_sync($this->callWebhookJob);
+    }
+
+    public function dispatchSyncIf($condition): void
+    {
+        if ($condition) {
+            $this->dispatchSync();
+        }
+    }
+
+    public function dispatchSyncUnless($condition): void
+    {
+        $this->dispatchSyncIf(! $condition);
     }
 
     protected function prepareForDispatch(): void

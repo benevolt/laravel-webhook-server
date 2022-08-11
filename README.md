@@ -1,3 +1,6 @@
+
+[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/support-ukraine.svg?t=1" />](https://supportukrainenow.org)
+
 # Send webhooks from Laravel apps
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/laravel-webhook-server.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-webhook-server)
@@ -113,6 +116,28 @@ If you would like to call the webhook immediately (synchronously), you may use t
 WebhookCall::create()
    ...
    ->dispatchSync();
+```
+
+### Conditionally sending webhooks
+
+If you would like to conditionally dispatch a webhook, you may use the `dispatchIf`, `dispatchUnless`, `dispatchSyncIf` and `dispatchSyncUnless` methods:
+
+```php
+WebhookCall::create()
+   ...
+   ->dispatchIf($condition);
+
+WebhookCall::create()
+   ...
+   ->dispatchUnless($condition);
+
+WebhookCall::create()
+   ...
+   ->dispatchSyncIf($condition);
+
+WebhookCall::create()
+   ...
+   ->dispatchSyncUnless($condition);
 ```
 
 ### How signing requests works
@@ -288,6 +313,16 @@ By default, the package will not log any exceptions that are thrown when sending
 
 To handle exceptions you need to create listeners for the `Spatie\WebhookServer\Events\WebhookCallFailedEvent` and/or `Spatie\WebhookServer\Events\FinalWebhookCallFailedEvent` events.
 
+#### Retry failed execution
+By default, failing jobs will be ignored. To throw an exception when the last attempt of a job fails, you can call `throwExceptionOnFailure` :
+```php
+WebhookCall::create()
+    ->throwExceptionOnFailure()
+    ...
+    ->dispatch();
+```
+or activate the `throw_exception_on_failure` global option of the `webhook-server` config file.
+
 ### Events
 
 The package fires these events:
@@ -360,7 +395,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 
 ## Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](https://github.com/spatie/.github/blob/main/CONTRIBUTING.md) for details.
 
 ### Security
 
